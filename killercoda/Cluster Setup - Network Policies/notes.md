@@ -52,9 +52,13 @@ spec:
     ports:
       - protocol: TCP
         port: 80
+  - to:
     - namespaceSelector: # Consultar DNS
         matchLabels:
           kubernetes.io/metadata.name: kube-system
+      podSelector:
+        matchlabels:
+          k8s-app=kube-dns
     ports:
       - protocol: TCP # Consultar DNS
         port: 53
@@ -103,3 +107,5 @@ spec:
       port: 53
     - protocol: UDP
       port: 53
+
+---

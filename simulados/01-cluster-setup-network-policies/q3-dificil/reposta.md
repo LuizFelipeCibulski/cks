@@ -1,0 +1,189 @@
+
+
+Yamls default deny: 
+```
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny
+  namespace: frontend
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+    - to:
+       - podSelector:
+           matchLabels:
+             k8s-app: kube-dns 
+         namespaceSelector:
+           matchLabels:
+             kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: TCP
+          port: 53
+        - protocol: UDP
+          port: 53
+```
+```
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny
+  namespace: backend
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+    - to:
+       - podSelector:
+           matchLabels:
+             k8s-app: kube-dns  
+         namespaceSelector:
+           matchLabels:
+             kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: TCP
+          port: 53
+        - protocol: UDP
+          port: 53
+```
+```
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny
+  namespace: database
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+    - to:
+       - podSelector:
+           matchLabels:
+             k8s-app: kube-dns 
+         namespaceSelector:
+           matchLabels:
+             kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: TCP
+          port: 53
+        - protocol: UDP
+          port: 53
+```
+
+
+Yamls frontend:
+```
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny
+  namespace: frontend
+spec:
+  podSelector: 
+    matchLabels:
+      app: web
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+    ports: 
+      - protocol: TCP
+        port: 80
+  egress:
+    - to:
+       - podSelector:
+           matchLabels:
+             app: api 
+         namespaceSelector:
+           matchLabels:
+             kubernetes.io/metadata.name: backend
+      ports:
+        - protocol: TCP
+          port: 8080
+```
+
+
+Yamls backend:
+```
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny
+  namespace: backend
+spec:
+  podSelector: 
+    matchLabels:
+      app: api
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+    - podSelector:
+        matchLabels:
+            app: web 
+        namespaceSelector:
+           matchLabels:
+            kubernetes.io/metadata.name: frontend
+    ports: 
+      - protocol: TCP
+        port: 8080
+  egress:
+    - to:
+       - podSelector:
+           matchLabels:
+             app: db 
+         namespaceSelector:
+           matchLabels:
+             kubernetes.io/metadata.name: database
+      ports:
+        - protocol: TCP
+          port: 5432
+    - to:
+       - ipBlock:
+           cidr: 1.1.1.1/32
+      ports:
+        - protocol: TCP
+          port: 443
+    
+```
+
+Yamls database:
+```
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny
+  namespace: database
+spec:
+  podSelector: 
+    matchLabels:
+      app: db
+  policyTypes:
+  - Ingress
+  ingress:
+    - podSelector:
+        matchLabels:
+            app: api
+        namespaceSelector:
+           matchLabels:
+            kubernetes.io/metadata.name: backend
+    ports:
+      - portocol: TCP
+        port: 5432
+```
+
+E para passar 100%: 
+
+```
+k delete networkpolicies.networking.k8s.io -n database allow-all-legacy
+```

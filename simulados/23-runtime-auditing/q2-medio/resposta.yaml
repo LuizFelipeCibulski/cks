@@ -1,0 +1,44 @@
+## Resposta
+Yaml:
+```
+apiVersion: audit.k8s.io/v1
+kind: Policy
+# Don't generate audit events for all requests in RequestReceived stage.
+omitStages:
+  - "RequestReceived"
+rules:
+#- level: RequestResponse
+  # Log configmap and secret changes in all other namespaces at the Metadata level.
+  - level: Metadata
+    resources:
+    - group: "" # core API group
+      resources: ["secrets"]
+
+  # Don't log get,watch and list requests by the "system:nodes" on all
+  - level: None
+    userGroups: ["system:nodes"]
+    verbs: ["get", "watch", "list"]
+    resources:
+    - group: "" # core API group
+      resources: ["*"]
+
+  # Don't log watch requests by the "system:kube-proxy" on endpoints or services
+  - level: None
+    resources:
+    - group: "" # core API group
+      resources: ["endpoints"]
+
+  # Log pod changes at RequestResponse level
+  - level: RequestResponse
+    resources:
+    - group: "apps"
+      resources: ["deployments"]
+    namespaces: ["prod"]
+
+  # A catch-all rule to log all other requests at the Metadata level.
+  - level: Metadata
+    # Long-running requests like watches that fall under this rule will not
+    # generate an audit event in RequestReceived.
+    omitStages:
+      - "RequestReceived"
+```

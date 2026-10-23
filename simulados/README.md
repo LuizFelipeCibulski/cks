@@ -73,6 +73,9 @@ Dicas de prova para treinar junto:
 - `23-runtime-auditing`
 - `24-runtime-immutability`
 
+### Revisão final
+- `25-revisao-final` (drills cronometrados: Falco, Cilium FQDN/deny, audit + apiserver quebrado, PSA, encryption)
+
 ## Observações
 
 - Os scripts foram escritos para o ambiente do Killercoda (Ubuntu, kubeadm, root). Em outros clusters,
